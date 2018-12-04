@@ -26,6 +26,11 @@ enum TrunkMode: String{
     case hard = "Грузоподъемность свыше 10 тонн"
 }
 
+enum SportMode:String{
+    case turnOn = "Спорт режим включен"
+    case turnOff = "Спорт режим выключен"
+}
+
 protocol Car {
     //Свойства
     var yearOfManufacture: Int {get set} // год выпуска
@@ -35,8 +40,8 @@ protocol Car {
     var windowState: WindowState {get set}
     
     //Действие
-    func printInfo()
-//    init(yearOfManufacture: Int, maxTrunkVolume: Double, mark: String,engineState: EngineState,windowState: WindowState)
+    func changeCarState()
+
     
     }
 // Расширения протокола - методы вкл/выкл двигатель; открыть/закрыть двери
@@ -68,9 +73,7 @@ extension Car{
 
 //Создаем класс грузовой автомобиль
 class trunkCar:Car{
-//    required init(yearOfManufacture: Int, maxTrunkVolume: Double, mark: String, engineState: EngineState, windowState: WindowState) {
-//        <#code#>
-//    }
+
     
     //общие свойства
     var yearOfManufacture: Int
@@ -89,19 +92,18 @@ class trunkCar:Car{
     }
     //реальная номинальная грузоподъемность
     
-    
-    func printInfo() {
-        print("""
-            Марка: \(mark),
-            высота кузова: \(heightWork),
-            режим грузоподъемности:\(trunMode.rawValue),
-            текущий вес груза: \(carrying),
-            год выпуска: \(yearOfManufacture),
-            максимальная грузоподъемность: \(maxTrunkVolume),
-            состояние двигателя: \(engineState.rawValue),
-            состояние окон: \(windowState.rawValue)
-            """)
+    func changeCarState(){
+        if carrying>=0.0 && carrying<=2500.0 {
+            trunMode = TrunkMode.light}
+        else if carrying>2500.0 && carrying<=10000.0 {
+            trunMode = TrunkMode.midle
+        }
+        else if carrying>10000.0 {
+            trunMode = TrunkMode.hard
+        }
+        print("\(trunMode.rawValue)")
     }
+   
     
     init(yearOfManufacture: Int, maxTrunkVolume: Double, mark: String, engineState: EngineState, windowState: WindowState,heightWork:Int,trunMode:TrunkMode,carrying:Double){
         self.heightWork = heightWork
@@ -116,35 +118,43 @@ class trunkCar:Car{
    
     }
 }
-
+extension trunkCar: CustomStringConvertible{  // имплементируем протокол для вывода в консоль
+    var description: String{
+        return """
+        Марка: \(mark),
+        высота кузова: \(heightWork),
+        режим грузоподъемности:\(trunMode.rawValue),
+        текущий вес груза: \(carrying),
+        год выпуска: \(yearOfManufacture),
+        максимальная грузоподъемность: \(maxTrunkVolume),
+        состояние двигателя: \(engineState.rawValue),
+        состояние окон: \(windowState.rawValue)
+        """ // определяем, что именно будет выводиться
+    }
+    
+}
 class sportCar:Car{
 
-    
-    
     var yearOfManufacture: Int
     var maxTrunkVolume: Double
     var mark: String
     var engineState: EngineState
     var windowState: WindowState
+    
     let  countHorsePower: Int
     var  sportMode: SportMode
     
-    func printInfo() {
-        print("""
-            Марка: \(mark),
-            лошадиных сил: \(countHorsePower),
-            спорт режим :\(sportMode.rawValue),
-            год выпуска: \(yearOfManufacture),
-            максимальная грузоподъемность: \(maxTrunkVolume),
-            состояние двигателя: \(engineState.rawValue),
-            состояние окон: \(windowState.rawValue)
-            """)
-    }
-    enum SportMode:String{
-        case turnOn = "Спорт режим включен"
-        case turnOff = "Спорт режим выключен"
-    }
+   
+    
 
+    //Для спорткара запрещено открывать окна в спортрежиме
+    func changeCarState() {
+        
+        if (windowState == .open) && (sportMode == SportMode.turnOn)
+        {
+            print("Запрещается открывать окна в спорт режиме")}
+        }
+    
     init(yearOfManufacture: Int, maxTrunkVolume: Double, mark: String, engineState: EngineState, windowState: WindowState,countHorsePower:Int,sportMode:SportMode){
         self.countHorsePower = countHorsePower
         self.sportMode = sportMode
@@ -157,18 +167,43 @@ class sportCar:Car{
         
     }
 }
+    extension sportCar: CustomStringConvertible{  // имплементируем протокол для вывода в консоль
+        var description: String{
+            return """
+            Марка: \(mark),
+            лошадиных сил: \(countHorsePower),
+            спорт режим :\(sportMode.rawValue),
+            год выпуска: \(yearOfManufacture),
+            максимальная грузоподъемность: \(maxTrunkVolume),
+            состояние двигателя: \(engineState.rawValue),
+            состояние окон: \(windowState.rawValue)
+            """
+        }
+}
 
 var car1 = trunkCar(yearOfManufacture: 2012, maxTrunkVolume: 30_000.0, mark: "Man", engineState: EngineState.off, windowState: WindowState.close, heightWork: 250, trunMode: TrunkMode.light, carrying: 2_000.0)
-car1.printInfo()
+print("Грузовой автомобиль")
+print(car1)
 print("\n")
 print("Заводим двигатель")
 car1.engineState = .on
-car1.printInfo()
+print(car1)
 print("\n")
 print("Выключаем двигатель")
 car1.turnOffEngine()
-car1.printInfo()
+print(car1)
 print("\n")
 print("Открываем окна")
 car1.openWindow()
-car1.printInfo()
+print(car1)
+print("\n")
+print("Спортивный автомобиль")
+
+var car2 = sportCar(yearOfManufacture: 2014, maxTrunkVolume: 200.0, mark: "Opel", engineState: EngineState.on, windowState: WindowState.open, countHorsePower: 250, sportMode: SportMode.turnOff)
+print(car2)
+print("\n")
+print("Включаем спорт режим")
+car2.sportMode = .turnOn
+car2.changeCarState()
+print("\n")
+print(car2)
